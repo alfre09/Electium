@@ -1,0 +1,7 @@
+bin/
+obj/
+.vs/
+*.user
+electium.db*
+src/Electium.Web/wwwroot/uploads/candidates/*
+!src/Electium.Web/wwwroot/uploads/candidates/.gitkeep

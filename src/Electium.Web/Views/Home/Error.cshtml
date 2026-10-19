@@ -1,0 +1,13 @@
+@{
+    ViewData["Title"] = "Error";
+}
+
+<div class="el-wrap text-center">
+    <h1 class="el-title">Ocurrió un error</h1>
+    <p class="el-subtitle mb-4">No pudimos completar la operación. Intenta de nuevo en unos minutos.</p>
+    @if (!string.IsNullOrEmpty(ViewBag.RequestId as string))
+    {
+        <p class="text-muted small">Código de solicitud: <code>@ViewBag.RequestId</code></p>
+    }
+    <a class="btn btn-navy" asp-controller="Home" asp-action="Index">Volver al inicio</a>
+</div>

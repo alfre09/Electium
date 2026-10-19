@@ -1,0 +1,156 @@
+/* ===== Base ===== */
+:root {
+    --el-navy-900: #0b2342;
+    --el-navy-800: #102b4e;
+    --el-gold: #df2638;
+    --el-bg: #f4f7fb;
+    --el-border: #e2e8f0;
+    --el-muted: #73839a;
+}
+
+html { min-height: 100%; }
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+    background: var(--el-bg);
+    color: #172b48;
+    font-family: Inter, "Segoe UI", system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+main { flex: 1 0 auto; }
+
+/* ===== Páginas internas ===== */
+.el-wrap { max-width: 1180px; margin: 0 auto; padding: 28px 16px 48px; }
+.el-title { font-size: 1.6rem; font-weight: 750; letter-spacing: -.5px; margin: 0 0 4px; color: #102b4e; }
+.el-subtitle { color: var(--el-muted); margin: 0; }
+.el-eyebrow { font-size: .72rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }
+
+.el-card { background: #fff; border: 1px solid var(--el-border); border-radius: 16px; box-shadow: 0 1px 2px rgba(15, 23, 42, .05); }
+.el-card-body { padding: 24px; }
+
+.tbl th { font-size: .72rem; letter-spacing: .8px; text-transform: uppercase; color: #64748b; background: #f8fafc; white-space: nowrap; }
+.tbl td { vertical-align: middle; }
+
+.btn-gold { background: #df2638; border-color: #df2638; color: #fff; font-weight: 700; }
+.btn-gold:hover, .btn-gold:focus { background: #c41d2f; border-color: #c41d2f; color: #fff; }
+.btn-navy { background: #174f91; border-color: #174f91; color: #fff; font-weight: 600; }
+.btn-navy:hover, .btn-navy:focus { background: #102b4e; border-color: #102b4e; color: #fff; }
+
+/* Boleta */
+.ballot-position { margin-bottom: 22px; }
+.ballot-position-title { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
+.candidate-option { position: relative; display: block; height: 100%; cursor: pointer; }
+.candidate-option input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; cursor: pointer; }
+.candidate-card {
+    display: flex; align-items: center; gap: 14px; height: 100%; padding: 16px;
+    border: 2px solid var(--el-border); border-radius: 14px; background: #fff;
+    transition: border-color .15s, box-shadow .15s, background .15s;
+}
+.candidate-option:hover .candidate-card { border-color: #b8c3d6; }
+.candidate-option input:checked + .candidate-card { border-color: #174f91; background: #f0f6ff; box-shadow: 0 0 0 3px rgba(23, 79, 145, .14); }
+.candidate-option input:focus-visible + .candidate-card { outline: 3px solid rgba(23, 79, 145, .45); outline-offset: 2px; }
+.candidate-photo, .candidate-initials { flex-shrink: 0; width: 64px; height: 64px; border-radius: 14px; object-fit: cover; }
+.candidate-initials { display: grid; place-items: center; background: #edf4ff; color: #174f91; font-weight: 800; font-size: 1.2rem; }
+.candidate-name { font-weight: 700; line-height: 1.25; }
+.candidate-party { color: var(--el-muted); font-size: .85rem; }
+
+/* Resultados */
+.result-row { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+.result-info { flex: 1; min-width: 0; }
+.result-bar { height: 10px; border-radius: 99px; background: #edf0f6; overflow: hidden; }
+.result-bar > span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #174f91, #2870cf); }
+.result-row.is-leader .result-bar > span { background: linear-gradient(90deg, #c41d2f, #e3293d); }
+
+.stat-tile { padding: 20px; }
+.stat-number { font-size: 2rem; font-weight: 800; letter-spacing: -1px; color: #102b4e; line-height: 1; }
+.stat-label { color: var(--el-muted); font-size: .85rem; margin-top: 6px; }
+
+.avatar-sm { width: 38px; height: 38px; border-radius: 10px; object-fit: cover; }
+.avatar-initials { display: inline-grid; place-items: center; width: 38px; height: 38px; border-radius: 10px; background: #edf4ff; color: #174f91; font-size: .8rem; font-weight: 800; }
+
+/* ===== Diseño institucional (cabecera, portada y pie) ===== */
+.dr-auth { display: flex; align-items: center; gap: 10px; padding-left: 16px; border-left: 1px solid var(--dr-border); white-space: nowrap; }
+.dr-auth .dr-user { color: #586a82; font-size: 11px; font-weight: 600; max-width: 190px; overflow: hidden; text-overflow: ellipsis; }
+.dr-auth form { margin: 0; }
+.dr-hero-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+.dr-button-red { background: var(--dr-red); }
+.dr-button-red:hover { background: #bd1e2e; }
+.dr-steps { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; }
+.dr-steps li { display: flex; gap: 12px; align-items: flex-start; font-size: 12px; line-height: 1.6; color: #536b88; }
+.dr-steps b { flex-shrink: 0; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 8px; background: #edf4ff; color: var(--dr-blue); font-size: 12px; }
+.dr-badge-state { display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: 10px; font-weight: 700; }
+.dr-badge-state.open { background: #e9f8ef; color: #168454; }
+.dr-badge-state.closed { background: #eef1f6; color: #52647b; }
+.dr-badge-state.draft { background: #fff6e8; color: #a9760b; }
+
+/* --- Estilos del diseño institucional (prefijo dr-) --- */
+:root{--dr-navy:#102b4e;--dr-blue:#174f91;--dr-red:#df2638;--dr-bg:#f4f7fb;--dr-text:#172b48;--dr-muted:#73839a;--dr-border:#e2e8f0;--dr-shadow:0 12px 35px rgba(16,43,78,.07)}
+.dr-tricolor{height:5px;background:linear-gradient(90deg,var(--dr-red) 0 33.33%,#fff 33.33% 66.66%,#1554a1 66.66%)}
+.dr-nav-wrap{background:#fff;border-bottom:1px solid var(--dr-border)}
+.dr-nav{max-width:1580px;min-height:82px;margin:auto;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.dr-brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--dr-navy);flex-shrink:0}
+.dr-brand-mark{width:46px;height:46px;display:grid;place-items:center;font-size:34px}
+.dr-brand-name{display:block;font-size:24px;line-height:1;font-weight:800;letter-spacing:1px}
+.dr-brand-sub{display:block;color:#78879c;font-size:9px;letter-spacing:.65px;font-weight:600;margin-top:6px}
+.dr-nav-links{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:4px}
+.dr-nav-links a{display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:#586a82;font-size:11px;font-weight:600;padding:11px 10px;border-radius:9px}
+.dr-nav-links a:hover,.dr-nav-links a.active{color:var(--dr-blue);background:#eef4fc}
+.dr-nav-links a.active{box-shadow:inset 0 -3px 0 var(--dr-red)}
+.dr-country{display:flex;align-items:center;gap:8px;padding-left:16px;border-left:1px solid var(--dr-border);color:#586a82;font-size:11px;font-weight:700;white-space:nowrap}
+.dr-flag{width:26px;height:18px;border:1px solid #e1e5ec;border-radius:2px;object-fit:cover}
+.dr-main{max-width:1580px;margin:auto;padding:28px 32px 0}
+
+/* La imagen se encuentra en wwwroot/imaghine/bandera-dominicana-hero.jpg */
+.dr-hero{position:relative;isolation:isolate;overflow:hidden;min-height:290px;padding:42px 46px;display:flex;align-items:center;border:1px solid rgba(255,255,255,.12);border-radius:17px;color:#fff;background-color:#102b4e;background-image:linear-gradient(90deg,rgba(8,28,53,.88) 0%,rgba(12,42,78,.70) 52%,rgba(12,42,78,.38) 100%),url('/imaghine/bandera-dominicana-hero.jpg');background-size:cover;background-position:center 43%;background-repeat:no-repeat;box-shadow:0 16px 38px rgba(16,43,78,.14)}
+.dr-hero:after{content:"";position:absolute;z-index:-1;right:-80px;top:-175px;width:350px;height:350px;border:1px solid rgba(255,255,255,.13);border-radius:50%;box-shadow:0 0 0 38px rgba(255,255,255,.025),0 0 0 78px rgba(255,255,255,.025);pointer-events:none}
+.dr-hero-content{position:relative;z-index:1;max-width:850px}
+.dr-eyebrow{color:#e3edfa;text-transform:uppercase;letter-spacing:1.8px;font-size:10px;font-weight:700;display:flex;align-items:center;gap:9px;margin-bottom:15px}
+.dr-eyebrow:before{content:"";width:25px;height:3px;background:var(--dr-red);border-radius:5px}
+.dr-hero h1{margin:0 0 13px;font-size:clamp(30px,3.2vw,46px);line-height:1.14;letter-spacing:-1.4px;font-weight:800;color:#fff}
+.dr-hero h1 span{font-weight:500;color:#e0ebfa}
+.dr-hero p{margin:0;max-width:730px;color:#edf3fc;line-height:1.8;font-size:14px}
+.dr-bars{display:flex;gap:6px;width:235px;margin-top:22px}
+.dr-bars span{height:5px;flex:1;border-radius:9px}
+.dr-bars span:nth-child(1){background:#e3293d}.dr-bars span:nth-child(2){background:#fff}.dr-bars span:nth-child(3){background:#2870cf}
+.dr-section-head{margin:30px 0 16px;display:flex;justify-content:space-between;align-items:flex-end;gap:15px}
+.dr-section-head h2{margin:0;color:var(--dr-navy);font-size:20px;font-weight:800;letter-spacing:-.5px}
+.dr-section-head p{margin:6px 0 0;color:var(--dr-muted);font-size:12px}
+.dr-status{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--dr-border);background:#fff;border-radius:30px;font-size:11px;color:#63748a;white-space:nowrap}
+.dr-status-dot{width:8px;height:8px;border-radius:50%;background:#e0a32a}.dr-status-dot.active{background:#15945a}
+.dr-module-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}
+.dr-module{min-width:0;padding:20px;background:#fff;border:1px solid var(--dr-border);border-radius:14px;display:flex;align-items:flex-start;gap:14px;color:var(--dr-text);text-decoration:none;transition:transform .2s,box-shadow .2s,border-color .2s}
+.dr-module:hover{transform:translateY(-3px);box-shadow:var(--dr-shadow);border-color:#c6d5e8;color:var(--dr-blue)}
+.dr-module-icon{width:45px;height:45px;flex-shrink:0;display:grid;place-items:center;border-radius:12px;background:#edf4ff;color:var(--dr-blue);font-size:21px}
+.dr-module:nth-child(3n+2) .dr-module-icon{background:#fff0f1;color:var(--dr-red)}.dr-module:nth-child(3n) .dr-module-icon{background:#eaf7ef;color:#178453}
+.dr-module h3{margin:2px 0 6px;font-size:13px;font-weight:800;color:var(--dr-navy)}.dr-module p{margin:0;color:var(--dr-muted);font-size:11px;line-height:1.6}.dr-module-arrow{margin-left:auto;color:#9aa8b9;font-size:15px}
+.dr-lower-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(300px,.8fr);gap:16px;margin-top:18px}
+.dr-panel{min-width:0;padding:23px;background:#fff;border:1px solid var(--dr-border);border-radius:15px}
+.dr-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:18px}
+.dr-panel-head h3{margin:0;color:var(--dr-navy);font-size:15px;font-weight:800}.dr-panel-head p{margin:6px 0 0;color:var(--dr-muted);font-size:11px}
+.dr-year-form{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap}.dr-year-form label{display:block;margin-bottom:7px;color:#52647b;font-size:11px;font-weight:700}
+.dr-year-form select{min-width:145px;padding:11px 12px;border:1px solid #dbe3ed;border-radius:9px;background:#fff;color:var(--dr-text);font:inherit;font-size:12px}
+.dr-button{display:inline-flex;justify-content:center;align-items:center;gap:8px;border:0;border-radius:9px;padding:12px 15px;background:var(--dr-blue);color:#fff;font-size:11px;font-weight:700;cursor:pointer;text-decoration:none}.dr-button:hover{background:var(--dr-navy);color:#fff}
+.dr-empty{border:1px dashed #dce4ee;border-radius:11px;background:#f9fbfe;padding:23px;text-align:center;color:var(--dr-muted)}
+.dr-empty i{display:block;font-size:26px;color:#8ea0b7;margin-bottom:8px}.dr-empty strong{display:block;color:#52647b;font-size:12px;margin-bottom:6px}.dr-empty span{font-size:11px;line-height:1.6}
+.dr-summary-table-wrap{overflow-x:auto;margin-top:18px}.dr-summary-table{width:100%;border-collapse:collapse;font-size:11px}
+.dr-summary-table th{text-align:left;padding:11px 9px;color:#718198;background:#f7f9fc;border-bottom:1px solid var(--dr-border);white-space:nowrap}
+.dr-summary-table td{padding:13px 9px;border-bottom:1px solid #edf1f6;color:#465a73}.dr-summary-table tr:last-child td{border-bottom:0}
+.dr-callout{display:flex;gap:12px;padding:15px;border-radius:11px;background:#f0f5fc;color:#536b88;font-size:11px;line-height:1.7}.dr-callout i{font-size:19px;color:var(--dr-blue);flex-shrink:0}
+.dr-footer{max-width:1580px;margin:auto;padding:20px 32px 0;display:flex;justify-content:space-between;align-items:center;gap:12px;color:#8492a7;font-size:10px}
+.dr-footer-brand{display:flex;align-items:center;gap:8px}.dr-footer img{width:23px;height:16px;object-fit:cover}
+@media(max-width:1150px){.dr-nav{padding:14px 20px;flex-wrap:wrap}.dr-nav-links{order:3;width:100%;justify-content:flex-start}.dr-main{padding:23px 20px 0}.dr-module-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dr-footer{padding-left:20px;padding-right:20px}}
+@media(max-width:760px){.dr-lower-grid{grid-template-columns:1fr}.dr-hero{padding:32px 27px;min-height:250px}.dr-nav-links a{padding:10px 8px}.dr-section-head{align-items:flex-start;flex-direction:column}}
+@media(max-width:520px){.dr-nav{padding:13px 15px}.dr-brand-mark{width:36px;height:36px;font-size:28px}.dr-brand-name{font-size:20px}.dr-brand-sub{font-size:8px}.dr-nav-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.dr-nav-links a{font-size:10px}.dr-main{padding:16px 14px 0}.dr-hero{padding:28px 22px}.dr-hero h1{font-size:31px;letter-spacing:-.8px}.dr-module-grid{grid-template-columns:1fr}.dr-panel{padding:17px}.dr-footer{padding:18px 14px 0;align-items:flex-start;flex-direction:column}}
+
+/* Banderita de la barra superior: ondea por tiras con brillo y resplandor */
+.dr-country .dr-nav-flag{position:relative;display:inline-flex;width:36px;height:24px;border-radius:2px;filter:drop-shadow(0 0 0 rgba(206,17,38,0));animation:dr-nav-glow 2.6s ease-in-out infinite}
+.dr-country .dr-nav-flag i{flex:1 0 0;height:100%;background-image:url("https://flagcdn.com/w80/do.png");background-size:1200% 100%;background-position:calc(var(--i) * 100% / 11) 0;animation:dr-nav-wave 1.6s ease-in-out infinite;animation-delay:calc(var(--i) * -0.12s)}
+.dr-country .dr-nav-flag:after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.55) 50%,transparent 65%);background-size:250% 100%;mix-blend-mode:soft-light;animation:dr-nav-shine 2.6s linear infinite}
+@keyframes dr-nav-wave{0%,100%{transform:translateY(-2px);filter:brightness(1.1)}50%{transform:translateY(2px);filter:brightness(.8)}}
+@keyframes dr-nav-shine{0%{background-position:150% 0}100%{background-position:-50% 0}}
+@keyframes dr-nav-glow{0%,100%{filter:drop-shadow(0 0 0 rgba(206,17,38,0))}50%{filter:drop-shadow(0 0 5px rgba(0,45,98,.55))}}
+@media(prefers-reduced-motion:reduce){.dr-country .dr-nav-flag,.dr-country .dr-nav-flag i,.dr-country .dr-nav-flag:after{animation:none}}

@@ -1,0 +1,109 @@
+@model BallotDto
+@{
+    ViewData["Title"] = "Boleta";
+    var voterName = ViewBag.VoterName as string;
+
+    string Initials(string name)
+    {
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length == 0 ? "?" : string.Concat(parts.Take(2).Select(p => char.ToUpperInvariant(p[0])));
+    }
+}
+
+<div class="el-wrap">
+    <div class="mb-4">
+        <div class="el-eyebrow text-secondary">Paso 2 de 3</div>
+        <h1 class="el-title">@Model.ElectionName</h1>
+        <p class="el-subtitle">
+            @if (!string.IsNullOrEmpty(voterName)) { <span>Bienvenido(a), <strong>@voterName</strong>. </span> }
+            Selecciona un candidato por puesto. Debes elegir al menos un candidato; los puestos que dejes sin seleccionar quedan en blanco.
+        </p>
+    </div>
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+    @if (Model.Positions.Count == 0)
+    {
+        <div class="alert alert-warning">Esta elección todavía no tiene candidatos disponibles.</div>
+    }
+    else
+    {
+        <form asp-action="Ballot" method="post" id="ballotForm">
+            @foreach (var position in Model.Positions)
+            {
+                <section class="el-card ballot-position">
+                    <div class="el-card-body">
+                        <div class="ballot-position-title">
+                            <div>
+                                <h4 class="mb-0">@position.PositionName</h4>
+                                @if (!string.IsNullOrEmpty(position.Description))
+                                {
+                                    <small class="text-secondary">@position.Description</small>
+                                }
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" data-clear="@position.PositionId">
+                                Limpiar
+                            </button>
+                        </div>
+
+                        <div class="row g-3">
+                            @foreach (var candidate in position.Candidates)
+                            {
+                                <div class="col-md-6 col-lg-4">
+                                    <label class="candidate-option">
+                                        <input type="radio" name="selections[@position.PositionId]" value="@candidate.Id"
+                                               data-position="@position.PositionId" />
+                                        <div class="candidate-card">
+                                            @if (!string.IsNullOrEmpty(candidate.PhotoPath))
+                                            {
+                                                <img class="candidate-photo" src="@candidate.PhotoPath" alt="Foto de @candidate.CitizenFullName" />
+                                            }
+                                            else
+                                            {
+                                                <div class="candidate-initials" aria-hidden="true">@Initials(candidate.CitizenFullName)</div>
+                                            }
+                                            <div>
+                                                <div class="candidate-name">@candidate.CitizenFullName</div>
+                                                <div class="candidate-party">@candidate.PartyName</div>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </section>
+            }
+
+            <div class="d-flex flex-wrap gap-2 justify-content-between">
+                <a class="btn btn-outline-secondary" asp-action="Index">Cancelar</a>
+                <button type="submit" class="btn btn-gold btn-lg px-4">Confirmar mi voto</button>
+            </div>
+        </form>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('[data-clear]').forEach(function (button) {
+            button.addEventListener('click', function () {
+                var id = button.getAttribute('data-clear');
+                document.querySelectorAll('input[data-position="' + id + '"]').forEach(function (r) { r.checked = false; });
+            });
+        });
+
+        var form = document.getElementById('ballotForm');
+        if (form) {
+            form.addEventListener('submit', function (e) {
+                var selected = form.querySelectorAll('input[type=radio]:checked').length;
+                if (selected === 0) {
+                    alert('Debes seleccionar al menos un candidato para poder votar.');
+                    e.preventDefault();
+                    return;
+                }
+                var message = 'Tu voto no se puede modificar después de confirmarlo. ¿Deseas continuar?';
+                if (!confirm(message)) { e.preventDefault(); }
+            });
+        }
+    </script>
+}

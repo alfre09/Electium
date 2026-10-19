@@ -1,0 +1,52 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Panel";
+}
+
+<div class="el-wrap">
+    <div class="mb-4">
+        <h1 class="el-title">Panel @(Model.IsLeader ? "del dirigente" : "administrativo")</h1>
+        <p class="el-subtitle">
+            @if (Model.IsLeader)
+            {
+                <span>Partido: <strong>@Model.PartyName</strong></span>
+            }
+            else
+            {
+                <span>Resumen general del sistema Electium.</span>
+            }
+        </p>
+    </div>
+
+    <div class="el-card mb-4">
+        <div class="el-card-body d-flex flex-wrap justify-content-between align-items-center gap-3">
+            @if (Model.OpenElection is not null)
+            {
+                <div>
+                    <span class="badge text-bg-success me-2">Elección abierta</span>
+                    <strong>@Model.OpenElection.Name</strong>
+                </div>
+                <a class="btn btn-navy" asp-controller="Results" asp-action="Index" asp-route-electionId="@Model.OpenElection.Id">Ver resultados en vivo</a>
+            }
+            else
+            {
+                <div><span class="badge text-bg-secondary me-2">Sin elección abierta</span> No hay un proceso electoral en curso.</div>
+                @if (!Model.IsLeader)
+                {
+                    <a class="btn btn-navy" asp-controller="Elections" asp-action="Index">Gestionar elecciones</a>
+                }
+            }
+        </div>
+    </div>
+
+    <div class="row g-3">
+        @if (!Model.IsLeader)
+        {
+            <div class="col-6 col-lg-3"><div class="el-card stat-tile"><div class="stat-number">@Model.Citizens</div><div class="stat-label">Ciudadanos</div></div></div>
+            <div class="col-6 col-lg-3"><div class="el-card stat-tile"><div class="stat-number">@Model.Parties</div><div class="stat-label">Partidos</div></div></div>
+            <div class="col-6 col-lg-3"><div class="el-card stat-tile"><div class="stat-number">@Model.Positions</div><div class="stat-label">Puestos electivos</div></div></div>
+            <div class="col-6 col-lg-3"><div class="el-card stat-tile"><div class="stat-number">@Model.Elections</div><div class="stat-label">Elecciones</div></div></div>
+        }
+        <div class="col-6 col-lg-3"><div class="el-card stat-tile"><div class="stat-number">@Model.Candidates</div><div class="stat-label">@(Model.IsLeader ? "Candidatos de mi partido" : "Candidatos")</div></div></div>
+    </div>
+</div>

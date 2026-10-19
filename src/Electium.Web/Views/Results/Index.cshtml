@@ -1,0 +1,86 @@
+@model ResultsViewModel
+@{
+    ViewData["Title"] = "Resultados";
+    var results = Model.Results;
+
+    string StatusText(ElectionStatus s) => s switch
+    {
+        ElectionStatus.Open => "Abierta (resultados parciales)",
+        ElectionStatus.Closed => "Cerrada (resultados finales)",
+        _ => "Borrador"
+    };
+}
+
+<div class="el-wrap">
+    <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+        <div>
+            <h1 class="el-title">Resultados</h1>
+            <p class="el-subtitle">
+                @if (Model.IsLeader)
+                {
+                    <span>Mostrando solo los candidatos de <strong>@Model.PartyName</strong>.</span>
+                }
+                else
+                {
+                    <span>Conteo de votos por puesto electivo.</span>
+                }
+            </p>
+        </div>
+
+        <form method="get" asp-action="Index" class="d-flex gap-2 align-items-center">
+            <label for="electionId" class="form-label mb-0">Elección:</label>
+            <select id="electionId" name="electionId" class="form-select w-auto" onchange="this.form.submit()">
+                @foreach (var election in Model.Elections)
+                {
+                    <option value="@election.Id" selected="@(Model.SelectedElectionId == election.Id)">@election.Name</option>
+                }
+            </select>
+        </form>
+    </div>
+
+    @if (results is null)
+    {
+        <div class="alert alert-info">Todavía no hay elecciones para mostrar resultados.</div>
+    }
+    else
+    {
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-lg-3"><div class="el-card stat-tile"><div class="stat-number">@results.VotersCount</div><div class="stat-label">Ciudadanos que votaron</div></div></div>
+            <div class="col-6 col-lg-3"><div class="el-card stat-tile"><div class="stat-number">@results.EligibleCitizens</div><div class="stat-label">Ciudadanos habilitados</div></div></div>
+            <div class="col-6 col-lg-3"><div class="el-card stat-tile"><div class="stat-number">@results.ParticipationPercent.ToString("0.#")%</div><div class="stat-label">Participación</div></div></div>
+            <div class="col-6 col-lg-3"><div class="el-card stat-tile"><div class="fw-semibold">@StatusText(results.Status)</div><div class="stat-label">Estado de la elección</div></div></div>
+        </div>
+
+        @if (results.Positions.Count == 0)
+        {
+            <div class="alert alert-warning">Esta elección no tiene candidatos para mostrar.</div>
+        }
+
+        @foreach (var position in results.Positions)
+        {
+            <section class="el-card mb-4">
+                <div class="el-card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="mb-0">@position.PositionName</h4>
+                        <span class="text-secondary small">@position.TotalVotes votos en total</span>
+                    </div>
+
+                    @{ var first = true; }
+                    @foreach (var candidate in position.Candidates)
+                    {
+                        <div class="result-row @(first && candidate.Votes > 0 ? "is-leader" : "")">
+                            <div class="result-info">
+                                <div class="d-flex justify-content-between gap-2 mb-1">
+                                    <span><strong>@candidate.CandidateName</strong> <span class="text-secondary">· @candidate.PartyName</span></span>
+                                    <span class="fw-semibold">@candidate.Votes <span class="text-secondary fw-normal">(@candidate.Percentage.ToString("0.#")%)</span></span>
+                                </div>
+                                <div class="result-bar"><span style="width:@candidate.Percentage.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)%"></span></div>
+                            </div>
+                        </div>
+                        first = false;
+                    }
+                </div>
+            </section>
+        }
+    }
+</div>

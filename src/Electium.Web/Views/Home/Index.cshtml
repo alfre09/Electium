@@ -1,0 +1,176 @@
+@model HomeViewModel
+@{
+    ViewData["Title"] = "Inicio";
+
+    // Módulos visibles según el rol: (título, descripción, icono, controlador, acción)
+    var modules = new List<(string Title, string Text, string Icon, string Controller, string Action)>();
+
+    if (Model.IsAdmin)
+    {
+        modules.Add(("Panel de control", "Resumen general y estado del proceso electoral.", "bi-speedometer2", "Dashboard", "Index"));
+        modules.Add(("Puestos electivos", "Administra cargos y estados según las reglas de cada proceso electoral.", "bi-diagram-3", "Positions", "Index"));
+        modules.Add(("Ciudadanos", "Consulta y administra la información de los electores registrados.", "bi-people", "Citizens", "Index"));
+        modules.Add(("Partidos políticos", "Organiza la información y el estado de los partidos participantes.", "bi-flag", "Parties", "Index"));
+        modules.Add(("Dirigentes políticos", "Administra las cuentas de acceso de los dirigentes y sus partidos.", "bi-person-check", "Leaders", "Index"));
+        modules.Add(("Elecciones", "Crea, abre y cierra los procesos electorales registrados.", "bi-calendar2-check", "Elections", "Index"));
+        modules.Add(("Candidatos", "Registra los candidatos por partido, puesto y elección.", "bi-person-badge", "Candidates", "Index"));
+        modules.Add(("Resultados", "Consulta el conteo de votos por puesto y la participación.", "bi-bar-chart-line", "Results", "Index"));
+        modules.Add(("Zona de votación", "Vista del elector para verificar identidad y votar.", "bi-box-arrow-in-down", "Vote", "Index"));
+    }
+    else if (Model.IsLeader)
+    {
+        modules.Add(("Panel de control", "Resumen de tu partido y del proceso electoral.", "bi-speedometer2", "Dashboard", "Index"));
+        modules.Add(("Candidatos de mi partido", "Registra y administra los candidatos de tu partido.", "bi-person-badge", "Candidates", "Index"));
+        modules.Add(("Resultados", "Consulta los votos de los candidatos de tu partido.", "bi-bar-chart-line", "Results", "Index"));
+    }
+    else
+    {
+        modules.Add(("Votar", "Verifica tu identidad con tu documento y ejerce tu voto de forma segura.", "bi-box-arrow-in-down", "Vote", "Index"));
+        modules.Add(("Acceso administrativo", "Ingreso para administradores y dirigentes políticos.", "bi-person-lock", "Account", "Login"));
+    }
+
+    string StateClass(ElectionStatus s) => s switch { ElectionStatus.Open => "open", ElectionStatus.Closed => "closed", _ => "draft" };
+    string StateText(ElectionStatus s) => s switch { ElectionStatus.Open => "Abierta", ElectionStatus.Closed => "Cerrada", _ => "Borrador" };
+}
+
+<div class="dr-main">
+    <section class="dr-hero">
+        <div class="dr-hero-content">
+            <div class="dr-eyebrow">República Dominicana · @(Model.IsStaff ? "Panel de administración" : "Votación electrónica")</div>
+            <h1>La tecnología al servicio de la <span>democracia.</span></h1>
+            @if (Model.IsStaff)
+            {
+                <p>Administra ciudadanos, partidos políticos, puestos electivos y procesos electorales desde una plataforma centralizada, organizada y transparente.</p>
+            }
+            else
+            {
+                <p>Ejerce tu voto de forma segura: verificamos tu identidad con tu documento y registramos tu participación sin revelar jamás por quién votaste.</p>
+                <div class="dr-hero-actions">
+                    @if (Model.HasActiveElection)
+                    {
+                        <a class="dr-button dr-button-red" asp-controller="Vote" asp-action="Index"><i class="bi bi-box-arrow-in-down"></i> Votar ahora</a>
+                    }
+                    else
+                    {
+                        <a class="dr-button" asp-controller="Vote" asp-action="Index"><i class="bi bi-box-arrow-in-down"></i> Ir a la zona de votación</a>
+                    }
+                </div>
+            }
+            <div class="dr-bars" aria-label="Colores de la bandera dominicana"><span></span><span></span><span></span></div>
+        </div>
+    </section>
+
+    <div class="dr-section-head">
+        <div>
+            <h2>@(Model.IsStaff ? "Centro de administración" : "¿Qué deseas hacer?")</h2>
+            <p>@(Model.IsStaff ? "Accesos principales a los módulos de gestión de Electium." : "Elige una opción para continuar.")</p>
+        </div>
+        <div class="dr-status">
+            <span class="dr-status-dot @(Model.HasActiveElection ? "active" : "")"></span>
+            @(Model.HasActiveElection ? $"Elección activa: {Model.ActiveElectionName}" : "Sin elección abierta")
+        </div>
+    </div>
+
+    <section class="dr-module-grid">
+        @foreach (var module in modules)
+        {
+            <a class="dr-module" asp-controller="@module.Controller" asp-action="@module.Action">
+                <span class="dr-module-icon"><i class="bi @module.Icon"></i></span>
+                <span><h3>@module.Title</h3><p>@module.Text</p></span>
+                <i class="bi bi-arrow-up-right dr-module-arrow"></i>
+            </a>
+        }
+    </section>
+
+    <section class="dr-lower-grid">
+        @if (Model.IsStaff)
+        {
+            <article class="dr-panel">
+                <div class="dr-panel-head">
+                    <div><h3>Resumen electoral por año</h3><p>Partidos, candidatos y votos emitidos de cada elección.</p></div>
+                    <i class="bi bi-bar-chart-line" style="font-size:22px;color:#6e86a4"></i>
+                </div>
+
+                <form class="dr-year-form" asp-controller="Home" asp-action="Index" method="get">
+                    <div>
+                        <label for="year">Año electoral</label>
+                        <select id="year" name="year">
+                            @if (!Model.ElectionYears.Any())
+                            {
+                                <option value="">No hay años disponibles</option>
+                            }
+                            else
+                            {
+                                foreach (var electionYear in Model.ElectionYears)
+                                {
+                                    <option value="@electionYear" selected="@(Model.SelectedYear == electionYear)">@electionYear</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <button class="dr-button" type="submit"><i class="bi bi-search"></i> Obtener resumen</button>
+                </form>
+
+                @if (Model.Summaries.Any())
+                {
+                    <div class="dr-summary-table-wrap">
+                        <table class="dr-summary-table">
+                            <thead><tr><th>Elección</th><th>Estado</th><th>Partidos</th><th>Candidatos</th><th>Votos emitidos</th></tr></thead>
+                            <tbody>
+                                @foreach (var item in Model.Summaries)
+                                {
+                                    <tr>
+                                        <td>@item.Name</td>
+                                        <td><span class="dr-badge-state @StateClass(item.Status)">@StateText(item.Status)</span></td>
+                                        <td>@item.PartyCount</td>
+                                        <td>@item.CandidateCount</td>
+                                        <td>@item.TotalVotes</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="dr-empty" style="margin-top:18px">
+                        <i class="bi bi-clipboard-data"></i>
+                        <strong>No hay elecciones para mostrar</strong>
+                        <span>Crea una elección en el módulo de Elecciones y aparecerá aquí con su resumen.</span>
+                    </div>
+                }
+            </article>
+
+            <aside class="dr-panel">
+                <div class="dr-panel-head">
+                    <div><h3>Reglas operativas</h3><p>Controles esenciales para la integridad del proceso.</p></div>
+                    <i class="bi bi-shield-check" style="font-size:22px;color:#168454"></i>
+                </div>
+                <div class="dr-callout"><i class="bi bi-info-circle"></i><div><strong>Elección activa</strong><br>Solo puede haber una elección abierta a la vez. Al abrirla, sus candidatos ya no se pueden modificar.</div></div>
+                <div class="dr-callout" style="margin-top:12px;background:#fff6e8"><i class="bi bi-shield-lock" style="color:#a9760b"></i><div><strong>Voto único y secreto</strong><br>Cada ciudadano vota una sola vez por elección y el sistema nunca revela por quién votó.</div></div>
+            </aside>
+        }
+        else
+        {
+            <article class="dr-panel">
+                <div class="dr-panel-head">
+                    <div><h3>Cómo votar</h3><p>Tres pasos, desde cualquier dispositivo.</p></div>
+                    <i class="bi bi-ui-checks" style="font-size:22px;color:#6e86a4"></i>
+                </div>
+                <ol class="dr-steps">
+                    <li><b>1</b><span><strong>Verifica tu identidad.</strong> Escribe tu documento y adjunta una foto; el sistema lee el número (OCR) y confirma que coincide.</span></li>
+                    <li><b>2</b><span><strong>Elige a tus candidatos.</strong> Selecciona un candidato por cada puesto electivo de la boleta.</span></li>
+                    <li><b>3</b><span><strong>Confirma tu voto.</strong> Recibirás un correo de confirmación. Solo se permite un voto por ciudadano.</span></li>
+                </ol>
+            </article>
+
+            <aside class="dr-panel">
+                <div class="dr-panel-head">
+                    <div><h3>Tu voto es secreto</h3><p>Seguridad y transparencia.</p></div>
+                    <i class="bi bi-shield-check" style="font-size:22px;color:#168454"></i>
+                </div>
+                <div class="dr-callout"><i class="bi bi-shield-lock"></i><div><strong>Privacidad</strong><br>Tu imagen se usa solo para la verificación y no se guarda. El correo de confirmación no indica por quién votaste.</div></div>
+            </aside>
+        }
+    </section>
+</div>

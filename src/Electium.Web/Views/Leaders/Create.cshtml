@@ -1,0 +1,55 @@
+@model LeaderViewModel
+@{
+    ViewData["Title"] = "Nuevo dirigente político";
+}
+
+<div class="el-wrap" style="max-width:680px">
+    <div class="mb-4">
+        <h1 class="el-title">@ViewData["Title"]</h1>
+        <p class="el-subtitle">La contraseña debe tener mínimo 8 caracteres, con mayúscula, minúscula y número.</p>
+    </div>
+
+    <div class="el-card">
+        <div class="el-card-body">
+            <form method="post" asp-action="Create" novalidate>
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                <div class="mb-3">
+                    <label asp-for="FullName" class="form-label"></label>
+                    <input asp-for="FullName" class="form-control" />
+                    <span asp-validation-for="FullName" class="text-danger small"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label"></label>
+                    <input asp-for="Email" class="form-control" type="email" autocomplete="off" />
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="PartyId" class="form-label"></label>
+                    <select asp-for="PartyId" class="form-select"
+                            asp-items="@(new SelectList(Model.Parties, "Id", "Text", Model.PartyId))">
+                        <option value="0">— Seleccione —</option>
+                    </select>
+                    <span asp-validation-for="PartyId" class="text-danger small"></span>
+                </div>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label asp-for="Password" class="form-label"></label>
+                        <input asp-for="Password" class="form-control" autocomplete="new-password" />
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="ConfirmPassword" class="form-label"></label>
+                        <input asp-for="ConfirmPassword" class="form-control" autocomplete="new-password" />
+                        <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a class="btn btn-outline-secondary" asp-action="Index">Cancelar</a>
+                    <button type="submit" class="btn btn-navy">Crear dirigente</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

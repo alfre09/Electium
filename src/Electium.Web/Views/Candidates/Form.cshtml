@@ -1,0 +1,91 @@
+@model CandidateViewModel
+@{
+    var isNew = Model.Id == 0;
+    ViewData["Title"] = isNew ? "Nuevo candidato" : "Editar candidato";
+}
+
+<div class="el-wrap" style="max-width:760px">
+    <div class="mb-4">
+        <h1 class="el-title">@ViewData["Title"]</h1>
+        <p class="el-subtitle">Cada partido puede presentar un candidato por puesto, y un ciudadano solo puede ser candidato una vez por elección.</p>
+    </div>
+
+    <div class="el-card">
+        <div class="el-card-body">
+            <form method="post" enctype="multipart/form-data"
+                  asp-action="@(isNew ? "Create" : "Edit")" asp-route-id="@(isNew ? (int?)null : Model.Id)" novalidate>
+                <input type="hidden" asp-for="Id" />
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="ElectionId" class="form-label"></label>
+                        <select asp-for="ElectionId" class="form-select"
+                                asp-items="@(new SelectList(Model.Elections, "Id", "Text", Model.ElectionId))">
+                            <option value="0">— Seleccione —</option>
+                        </select>
+                        <span asp-validation-for="ElectionId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="PartyId" class="form-label"></label>
+                        @if (Model.PartyLocked)
+                        {
+                            <select asp-for="PartyId" class="form-select"
+                                    asp-items="@(new SelectList(Model.Parties, "Id", "Text", Model.PartyId))"></select>
+                            <div class="form-text">Como dirigente solo puedes registrar candidatos de tu partido.</div>
+                        }
+                        else
+                        {
+                            <select asp-for="PartyId" class="form-select"
+                                    asp-items="@(new SelectList(Model.Parties, "Id", "Text", Model.PartyId))">
+                                <option value="0">— Seleccione —</option>
+                            </select>
+                        }
+                        <span asp-validation-for="PartyId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="ElectivePositionId" class="form-label"></label>
+                        <select asp-for="ElectivePositionId" class="form-select"
+                                asp-items="@(new SelectList(Model.Positions, "Id", "Text", Model.ElectivePositionId))">
+                            <option value="0">— Seleccione —</option>
+                        </select>
+                        <span asp-validation-for="ElectivePositionId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="CitizenId" class="form-label"></label>
+                        <select asp-for="CitizenId" class="form-select"
+                                asp-items="@(new SelectList(Model.Citizens, "Id", "Text", Model.CitizenId))">
+                            <option value="0">— Seleccione —</option>
+                        </select>
+                        <span asp-validation-for="CitizenId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-12">
+                        <label for="photo" class="form-label">Foto del candidato (opcional)</label>
+                        <input id="photo" name="photo" type="file" class="form-control" accept="image/png,image/jpeg,image/webp" />
+                        <div class="form-text">JPG, PNG o WEBP, máximo 2 MB.</div>
+                        @if (!string.IsNullOrEmpty(Model.PhotoPath))
+                        {
+                            <img src="@Model.PhotoPath" alt="Foto actual" class="mt-2 rounded" style="height:80px" />
+                        }
+                    </div>
+
+                    <div class="col-12">
+                        <div class="form-check form-switch">
+                            <input asp-for="IsActive" class="form-check-input" />
+                            <label asp-for="IsActive" class="form-check-label"></label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <a class="btn btn-outline-secondary" asp-action="Index">Cancelar</a>
+                    <button type="submit" class="btn btn-navy">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,19 @@
+@{
+    ViewData["Title"] = "Voto registrado";
+    var voterName = ViewBag.VoterName as string;
+}
+
+<div class="el-wrap text-center" style="max-width:600px">
+    <div class="el-card">
+        <div class="el-card-body py-5">
+            <div class="mx-auto mb-3 d-grid" style="width:72px;height:72px;place-items:center;border-radius:20px;background:#e8f7ee;color:#15803d;font-size:2.2rem;font-weight:800">✓</div>
+            <div class="el-eyebrow text-secondary mb-2">Paso 3 de 3</div>
+            <h1 class="el-title">¡Voto registrado!</h1>
+            <p class="el-subtitle mb-4">
+                @if (!string.IsNullOrEmpty(voterName)) { <span>Gracias, <strong>@voterName</strong>. </span> }
+                Tu participación fue registrada correctamente. Si tu correo está configurado, recibirás una confirmación.
+            </p>
+            <a class="btn btn-navy" asp-controller="Home" asp-action="Index">Volver al inicio</a>
+        </div>
+    </div>
+</div>

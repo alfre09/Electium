@@ -1,0 +1,87 @@
+@model IEnumerable<CandidateDto>
+@{
+    ViewData["Title"] = "Candidatos";
+    var elections = (ViewBag.Elections as List<ElectionDto>) ?? new List<ElectionDto>();
+    var selectedElectionId = ViewBag.SelectedElectionId as int?;
+    var isLeader = (ViewBag.IsLeader as bool?) ?? false;
+
+    string Initials(string name)
+    {
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length == 0 ? "?" : string.Concat(parts.Take(2).Select(p => char.ToUpperInvariant(p[0])));
+    }
+}
+
+<div class="el-wrap">
+    <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+        <div>
+            <h1 class="el-title">Candidatos</h1>
+            <p class="el-subtitle">
+                @(isLeader ? "Candidatos de tu partido." : "Candidatos de todos los partidos.")
+                Solo se pueden modificar mientras la elección está en borrador.
+            </p>
+        </div>
+        <a class="btn btn-gold" asp-action="Create">+ Nuevo candidato</a>
+    </div>
+
+    <form method="get" asp-action="Index" class="mb-3 d-flex flex-wrap gap-2 align-items-center">
+        <label for="electionId" class="form-label mb-0 me-1">Elección:</label>
+        <select id="electionId" name="electionId" class="form-select w-auto" onchange="this.form.submit()">
+            <option value="">Todas</option>
+            @foreach (var election in elections)
+            {
+                <option value="@election.Id" selected="@(selectedElectionId == election.Id)">@election.Name</option>
+            }
+        </select>
+    </form>
+
+    <div class="el-card">
+        <div class="table-responsive">
+            <table class="table tbl align-middle mb-0">
+                <thead>
+                    <tr><th>Candidato</th><th>Puesto</th><th>Partido</th><th>Elección</th><th>Estado</th><th class="text-end">Acciones</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    @if (!string.IsNullOrEmpty(item.PhotoPath))
+                                    {
+                                        <img class="avatar-sm" src="@item.PhotoPath" alt="" />
+                                    }
+                                    else
+                                    {
+                                        <span class="avatar-initials">@Initials(item.CitizenFullName)</span>
+                                    }
+                                    <span class="fw-semibold">@item.CitizenFullName</span>
+                                </div>
+                            </td>
+                            <td>@item.PositionName</td>
+                            <td>@item.PartyName</td>
+                            <td class="text-secondary">@item.ElectionName</td>
+                            <td>
+                                @if (item.IsActive) { <span class="badge text-bg-success">Activo</span> }
+                                else { <span class="badge text-bg-secondary">Inactivo</span> }
+                            </td>
+                            <td class="text-end">
+                                <div class="d-inline-flex gap-2">
+                                    <a class="btn btn-sm btn-outline-primary" asp-action="Edit" asp-route-id="@item.Id">Editar</a>
+                                    <form asp-action="Delete" asp-route-id="@item.Id" method="post"
+                                          onsubmit="return confirm('¿Eliminar a este candidato?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Any())
+                    {
+                        <tr><td colspan="6" class="text-center text-secondary py-5">No hay candidatos para mostrar.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

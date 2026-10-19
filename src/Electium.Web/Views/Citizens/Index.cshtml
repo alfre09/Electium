@@ -1,0 +1,891 @@
+@model IEnumerable<Electium.Application.ViewModels.CitizenViewModel>
+
+@{
+    ViewData["Title"] = "Ciudadanos | Electium";
+
+    var citizens = Model?.ToList()
+        ?? new List<Electium.Application.ViewModels.CitizenViewModel>();
+
+    var totalCitizens = citizens.Count;
+    var activeCitizens = citizens.Count(x => x.IsActive);
+    var inactiveCitizens = totalCitizens - activeCitizens;
+
+    var activeRate = totalCitizens > 0 ? activeCitizens * 100.0 / totalCitizens : 0;
+    var inactiveRate = totalCitizens > 0 ? inactiveCitizens * 100.0 / totalCitizens : 0;
+
+    // Escapa valores para atributos data-* (Razor ya codifica HTML en @)
+    string Initials(string? name, string? lastName)
+    {
+        var a = (name ?? "").Trim().FirstOrDefault();
+        var b = (lastName ?? "").Trim().FirstOrDefault();
+        var result = $"{a}{b}".Trim();
+        return string.IsNullOrEmpty(result) ? "?" : result;
+    }
+}
+
+<style>
+    :root {
+        --el-navy-900: #0b2342;
+        --el-navy-800: #102b4e;
+        --el-navy-700: #1e3a8a;
+        --el-gold: #df2638;
+        --el-gold-soft: #fbf5e6;
+        --el-bg: #f4f6fa;
+        --el-surface: #ffffff;
+        --el-text: #0f172a;
+        --el-text-2: #475569;
+        --el-muted: #64748b;
+        --el-border: #e5e9f1;
+        --el-border-strong: #d3dae6;
+        --el-success: #15803d;
+        --el-success-bg: #e8f7ee;
+        --el-danger: #b91c1c;
+        --el-danger-bg: #fdeded;
+        --el-focus: rgba(30, 58, 138, .35);
+        --el-radius: 14px;
+        --el-shadow-sm: 0 1px 2px rgba(15, 23, 42, .05);
+        --el-shadow-md: 0 8px 24px rgba(15, 23, 42, .08);
+    }
+
+    .el-page {
+        padding: 28px clamp(14px, 3vw, 36px) 40px;
+        background: var(--el-bg);
+        color: var(--el-text);
+        font-family: Inter, "Segoe UI", system-ui, -apple-system, sans-serif;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    .el-page *,
+    .el-page *::before,
+    .el-page *::after { box-sizing: border-box; }
+
+    .el-container { max-width: 1280px; margin: 0 auto; }
+
+    /* ---------- Breadcrumb + header ---------- */
+    .el-breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 14px;
+        font-size: 12.5px;
+        color: var(--el-muted);
+    }
+    .el-breadcrumb a { color: var(--el-muted); text-decoration: none; }
+    .el-breadcrumb a:hover { color: var(--el-navy-800); text-decoration: underline; }
+    .el-breadcrumb [aria-current] { color: var(--el-text); font-weight: 600; }
+
+    .el-header {
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        padding: 30px 32px;
+        margin-bottom: 24px;
+        color: #fff;
+        border-radius: 20px;
+        background: linear-gradient(120deg, var(--el-navy-900) 0%, #143e73 58%, #1f5da8 100%);
+        box-shadow: var(--el-shadow-md);
+    }
+    .el-header::after {
+        content: "";
+        position: absolute;
+        width: 280px;
+        height: 280px;
+        right: 10%;
+        top: -170px;
+        border: 1px solid rgba(255, 255, 255, .12);
+        border-radius: 50%;
+        box-shadow: 0 0 0 32px rgba(255, 255, 255, .025), 0 0 0 64px rgba(255, 255, 255, .02);
+        pointer-events: none;
+    }
+    .el-brand { position: relative; z-index: 1; display: flex; align-items: center; gap: 16px; }
+    .el-logo {
+        width: 56px; height: 56px; flex-shrink: 0;
+        display: grid; place-items: center;
+        border: 1px solid rgba(255, 255, 255, .22);
+        border-radius: 16px;
+        background: rgba(255, 255, 255, .09);
+        color: #f1d48c; font-size: 27px; font-weight: 800;
+    }
+    .el-eyebrow {
+        margin-bottom: 6px;
+        color: #dcc68f; font-size: 11px; font-weight: 800;
+        letter-spacing: 2.2px; text-transform: uppercase;
+    }
+    .el-header h1 {
+        margin: 0 0 6px;
+        font-size: clamp(24px, 3vw, 32px);
+        font-weight: 750; letter-spacing: -.7px;
+    }
+    .el-header p { margin: 0; color: #cfd9ee; font-size: 14px; }
+
+    /* ---------- Botones ---------- */
+    .el-btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+        min-height: 42px; padding: 0 16px;
+        border: 1px solid transparent; border-radius: 10px;
+        font: inherit; font-size: 13.5px; font-weight: 700;
+        text-decoration: none; white-space: nowrap; cursor: pointer;
+        transition: background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+    }
+    .el-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+    .el-btn-primary {
+        position: relative; z-index: 1;
+        background: var(--el-gold); border-color: var(--el-gold); color: #fff;
+    }
+    .el-btn-primary:hover {
+        background: #c41d2f; border-color: #c41d2f; color: #fff;
+        transform: translateY(-1px); box-shadow: 0 8px 18px rgba(223, 38, 56, .30);
+    }
+    .el-btn-secondary { background: #fff; border-color: var(--el-border-strong); color: var(--el-text-2); }
+    .el-btn-secondary:hover { background: #f8fafc; border-color: #b8c3d6; color: var(--el-text); }
+    .el-btn-danger { background: var(--el-danger); border-color: var(--el-danger); color: #fff; }
+    .el-btn-danger:hover { background: #991b1b; border-color: #991b1b; }
+
+    /* ---------- Resumen ---------- */
+    .el-section-title { margin: 0 0 14px; }
+    .el-section-title h2 { margin: 0 0 4px; font-size: 18px; font-weight: 750; letter-spacing: -.3px; }
+    .el-section-title p { margin: 0; color: var(--el-muted); font-size: 13px; }
+
+    .el-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-bottom: 28px; }
+    .el-stat {
+        padding: 22px;
+        background: var(--el-surface);
+        border: 1px solid var(--el-border);
+        border-radius: var(--el-radius);
+        box-shadow: var(--el-shadow-sm);
+        transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .el-stat:hover { transform: translateY(-2px); box-shadow: var(--el-shadow-md); }
+    .el-stat-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .el-stat-label { margin-bottom: 10px; color: var(--el-muted); font-size: 13px; font-weight: 600; }
+    .el-stat-number {
+        color: var(--el-navy-800);
+        font-size: clamp(28px, 3vw, 36px); font-weight: 800;
+        letter-spacing: -1.4px; line-height: 1;
+        font-variant-numeric: tabular-nums;
+    }
+    .el-stat-icon {
+        width: 46px; height: 46px; flex-shrink: 0;
+        display: grid; place-items: center; border-radius: 13px;
+    }
+    .el-stat-icon svg { width: 22px; height: 22px; }
+    .el-stat-icon.total { background: #eaf0ff; color: #2b4fa3; }
+    .el-stat-icon.active { background: var(--el-success-bg); color: var(--el-success); }
+    .el-stat-icon.inactive { background: var(--el-danger-bg); color: var(--el-danger); }
+
+    .el-meter { height: 6px; margin: 18px 0 10px; overflow: hidden; background: #edf0f6; border-radius: 99px; }
+    .el-meter > span { display: block; height: 100%; border-radius: inherit; }
+    .el-meter .m-total { background: linear-gradient(90deg, #3b5bb5, #6c8be0); }
+    .el-meter .m-active { background: linear-gradient(90deg, #15803d, #43b274); }
+    .el-meter .m-inactive { background: linear-gradient(90deg, #b91c1c, #e26a6a); }
+    .el-stat-desc { color: #7a8699; font-size: 12px; }
+
+    /* ---------- Panel / tabla ---------- */
+    .el-panel {
+        overflow: hidden;
+        background: var(--el-surface);
+        border: 1px solid var(--el-border);
+        border-radius: 18px;
+        box-shadow: var(--el-shadow-sm);
+    }
+    .el-toolbar {
+        display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+        gap: 16px; padding: 22px 24px;
+        border-bottom: 1px solid var(--el-border);
+    }
+    .el-toolbar h3 { margin: 0 0 4px; font-size: 17px; font-weight: 750; }
+    .el-toolbar p { margin: 0; color: var(--el-muted); font-size: 12.5px; }
+    .el-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+
+    .el-search { position: relative; min-width: 260px; }
+    .el-search svg {
+        position: absolute; left: 13px; top: 50%; width: 16px; height: 16px;
+        transform: translateY(-50%); color: #8a96aa; pointer-events: none;
+    }
+    .el-search input {
+        width: 100%; min-height: 42px; padding: 0 44px 0 38px;
+        border: 1px solid var(--el-border-strong); border-radius: 10px;
+        background: #fafbfd; color: var(--el-text); font: inherit; font-size: 13px;
+        outline: none; transition: border-color .18s, box-shadow .18s, background .18s;
+    }
+    .el-search input::placeholder { color: #94a0b3; }
+    .el-search input:focus { background: #fff; border-color: #5b78bd; box-shadow: 0 0 0 3px rgba(49, 85, 164, .12); }
+    .el-kbd {
+        position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+        padding: 2px 7px; border: 1px solid var(--el-border-strong); border-radius: 5px;
+        background: #fff; color: #7a8699; font: 600 11px/1.4 ui-monospace, Consolas, monospace;
+        pointer-events: none;
+    }
+
+    .el-select {
+        min-height: 42px; padding: 0 32px 0 12px;
+        border: 1px solid var(--el-border-strong); border-radius: 10px;
+        background-color: #fafbfd; color: #334155; font: inherit; font-size: 13px; cursor: pointer;
+    }
+
+    .el-table-wrap { overflow-x: auto; }
+    .el-table { width: 100%; margin: 0; border-collapse: separate; border-spacing: 0; white-space: nowrap; }
+    .el-table thead th {
+        position: sticky; top: 0; z-index: 1;
+        padding: 0; background: #f8fafc;
+        border-bottom: 1px solid var(--el-border);
+        color: #64748b; font-size: 11px; font-weight: 800;
+        letter-spacing: .9px; text-transform: uppercase; text-align: left;
+    }
+    .el-th-static { padding: 14px 20px; display: block; }
+    .el-sort {
+        display: flex; align-items: center; gap: 6px; width: 100%;
+        padding: 14px 20px; border: 0; background: transparent;
+        color: inherit; font: inherit; letter-spacing: inherit; text-transform: inherit;
+        text-align: left; cursor: pointer; transition: color .15s;
+    }
+    .el-sort:hover { color: var(--el-navy-800); }
+    .el-sort .arrow { opacity: .35; font-size: 10px; transition: opacity .15s; }
+    th[aria-sort="ascending"] .arrow,
+    th[aria-sort="descending"] .arrow { opacity: 1; color: var(--el-navy-800); }
+    th[aria-sort] .el-sort { color: var(--el-navy-800); }
+
+    .el-table tbody td {
+        padding: 16px 20px; border-bottom: 1px solid #eef1f6;
+        vertical-align: middle; color: var(--el-text-2); font-size: 13px;
+    }
+    .el-table tbody tr { transition: background .15s ease; }
+    .el-table tbody tr.citizen-row:hover { background: #f7f9ff; }
+    .el-table tbody tr:last-child td { border-bottom: 0; }
+
+    .el-id {
+        display: inline-flex; padding: 5px 9px; border-radius: 7px;
+        background: #eff2f8; color: #43567b;
+        font: 700 11px/1 ui-monospace, Consolas, monospace;
+    }
+    .el-person { display: flex; align-items: center; gap: 12px; }
+    .el-avatar {
+        width: 38px; height: 38px; flex-shrink: 0; display: grid; place-items: center;
+        border-radius: 11px; font-size: 12.5px; font-weight: 800; text-transform: uppercase;
+        background: var(--av-bg, #edf1fb); color: var(--av-fg, #294578);
+    }
+    .el-name { margin-bottom: 3px; color: #111c33; font-size: 13.5px; font-weight: 700; }
+    .el-sub { color: #98a2b3; font-size: 11.5px; }
+    .el-mail { color: #4b5d78; }
+    .el-doc { font: 500 12px/1 ui-monospace, Consolas, monospace; color: #4b5870; }
+    .el-na { color: #a3adbd; font-style: italic; }
+
+    .el-badge {
+        display: inline-flex; align-items: center; gap: 7px;
+        padding: 6px 11px; border-radius: 99px; font-size: 11.5px; font-weight: 700;
+    }
+    .el-badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .el-badge.is-active { color: var(--el-success); background: var(--el-success-bg); }
+    .el-badge.is-inactive { color: var(--el-danger); background: var(--el-danger-bg); }
+
+    .el-actions { display: flex; align-items: center; gap: 8px; }
+    .el-actions form { margin: 0; }
+    .el-act {
+        display: inline-flex; align-items: center; gap: 6px; padding: 7px 11px;
+        border: 1px solid transparent; border-radius: 8px;
+        font: inherit; font-size: 12px; font-weight: 700; text-decoration: none; cursor: pointer;
+        transition: background .18s, color .18s, border-color .18s;
+    }
+    .el-act svg { width: 14px; height: 14px; }
+    .el-act.edit { color: #2b4fa3; background: #eef3ff; border-color: #dfe8ff; }
+    .el-act.edit:hover { color: #fff; background: #2b4fa3; }
+    .el-act.delete { color: var(--el-danger); background: #fff2f2; border-color: #ffe0e0; }
+    .el-act.delete:hover { color: #fff; background: var(--el-danger); }
+
+    .el-empty td { padding: 56px 20px !important; text-align: center; white-space: normal; }
+    .el-empty-icon {
+        display: grid; place-items: center; width: 56px; height: 56px; margin: 0 auto 14px;
+        border-radius: 16px; background: #eff2f8; color: #657a9c;
+    }
+    .el-empty-icon svg { width: 26px; height: 26px; }
+    .el-empty h4 { margin: 0 0 6px; color: #1e2b45; font-size: 16px; font-weight: 750; }
+    .el-empty p { margin: 0 0 16px; color: #8491a5; font-size: 13px; }
+
+    /* ---------- Footer / paginación ---------- */
+    .el-footer {
+        display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+        gap: 14px; padding: 16px 24px; border-top: 1px solid var(--el-border);
+        color: #6b778b; font-size: 12.5px;
+    }
+    .el-footer-left { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .el-page-size { display: flex; align-items: center; gap: 8px; }
+    .el-page-size select {
+        min-height: 34px; padding: 0 26px 0 10px; border: 1px solid var(--el-border-strong);
+        border-radius: 8px; background-color: #fff; color: #334155; font: inherit; font-size: 12.5px; cursor: pointer;
+    }
+    .el-pager { display: flex; align-items: center; gap: 6px; }
+    .el-pager button {
+        min-width: 34px; height: 34px; padding: 0 10px;
+        border: 1px solid var(--el-border-strong); border-radius: 8px;
+        background: #fff; color: #334155; font: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer;
+        transition: background .15s, border-color .15s, color .15s;
+    }
+    .el-pager button:hover:not(:disabled):not(.is-current) { background: #f3f6fb; }
+    .el-pager button.is-current { background: var(--el-navy-800); border-color: var(--el-navy-800); color: #fff; }
+    .el-pager button:disabled { opacity: .45; cursor: not-allowed; }
+
+    /* ---------- Diálogo de confirmación ---------- */
+    .el-dialog {
+        width: min(440px, calc(100vw - 32px)); padding: 0;
+        border: 0; border-radius: 18px; background: #fff; color: var(--el-text);
+        box-shadow: 0 30px 70px rgba(15, 23, 42, .3);
+    }
+    .el-dialog::backdrop { background: rgba(15, 23, 42, .55); backdrop-filter: blur(3px); }
+    .el-dialog-body { padding: 28px 28px 8px; }
+    .el-dialog-icon {
+        display: grid; place-items: center; width: 46px; height: 46px; margin-bottom: 16px;
+        border-radius: 13px; background: var(--el-danger-bg); color: var(--el-danger);
+    }
+    .el-dialog-icon svg { width: 24px; height: 24px; }
+    .el-dialog h4 { margin: 0 0 8px; font-size: 18px; font-weight: 750; letter-spacing: -.3px; }
+    .el-dialog p { margin: 0; color: var(--el-text-2); font-size: 14px; line-height: 1.55; }
+    .el-dialog-actions { display: flex; justify-content: flex-end; gap: 10px; padding: 22px 28px 26px; }
+
+    /* ---------- Toast ---------- */
+    .el-toast {
+        position: fixed; right: 22px; bottom: 22px; z-index: 2000;
+        display: flex; align-items: center; gap: 10px; max-width: 360px; padding: 13px 16px;
+        border-radius: 12px; background: var(--el-navy-900); color: #fff;
+        font-size: 13px; font-weight: 600; box-shadow: var(--el-shadow-md);
+        opacity: 0; transform: translateY(12px); pointer-events: none;
+        transition: opacity .25s ease, transform .25s ease;
+    }
+    .el-toast.is-visible { opacity: 1; transform: translateY(0); }
+
+    .el-page .el-btn:focus-visible,
+    .el-page .el-act:focus-visible,
+    .el-page .el-sort:focus-visible,
+    .el-page .el-pager button:focus-visible,
+    .el-page a:focus-visible,
+    .el-page select:focus-visible,
+    .el-dialog .el-btn:focus-visible {
+        outline: 3px solid var(--el-focus); outline-offset: 2px;
+    }
+
+    .el-sr-only {
+        position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+        overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; white-space: nowrap;
+    }
+
+    @@media (max-width: 900px) {
+        .el-stats { grid-template-columns: 1fr; gap: 12px; }
+        .el-header { padding: 24px; }
+    }
+
+    @@media (max-width: 650px) {
+        .el-page { padding: 14px 12px 28px; }
+        .el-header { flex-direction: column; align-items: flex-start; gap: 20px; }
+        .el-header .el-btn { width: 100%; }
+        .el-toolbar { flex-direction: column; align-items: stretch; padding: 18px; }
+        .el-controls { flex-direction: column; align-items: stretch; }
+        .el-search { min-width: 0; width: 100%; }
+        .el-kbd { display: none; }
+        .el-select { width: 100%; }
+        .el-footer { flex-direction: column; align-items: flex-start; padding: 16px 18px; }
+    }
+
+    @@media (prefers-reduced-motion: reduce) {
+        .el-page *, .el-page *::before, .el-page *::after,
+        .el-toast { transition: none !important; }
+    }
+</style>
+
+<div class="el-page">
+<div class="el-container">
+
+    <nav class="el-breadcrumb" aria-label="Ruta de navegación">
+        <a asp-controller="Home" asp-action="Index">Inicio</a>
+        <span aria-hidden="true">/</span>
+        <span>Administración</span>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">Ciudadanos</span>
+    </nav>
+
+    <header class="el-header">
+        <div class="el-brand">
+            <div class="el-logo" aria-hidden="true">E</div>
+            <div>
+                <div class="el-eyebrow">Electium · Panel administrativo</div>
+                <h1>Gestión de ciudadanos</h1>
+                <p>Administra y consulta el registro de ciudadanos desde un solo lugar.</p>
+            </div>
+        </div>
+
+        <a asp-action="Create" class="el-btn el-btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+            Registrar ciudadano
+        </a>
+    </header>
+
+    <section aria-labelledby="summary-title">
+        <div class="el-section-title">
+            <h2 id="summary-title">Resumen general</h2>
+            <p>Indicadores del registro de ciudadanos.</p>
+        </div>
+
+        <div class="el-stats">
+            <article class="el-stat">
+                <div class="el-stat-top">
+                    <div>
+                        <div class="el-stat-label">Total de ciudadanos</div>
+                        <div class="el-stat-number">@totalCitizens.ToString("N0")</div>
+                    </div>
+                    <div class="el-stat-icon total" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+                    </div>
+                </div>
+                <div class="el-meter" aria-hidden="true"><span class="m-total" style="width:100%"></span></div>
+                <div class="el-stat-desc">Registros en el sistema</div>
+            </article>
+
+            <article class="el-stat">
+                <div class="el-stat-top">
+                    <div>
+                        <div class="el-stat-label">Ciudadanos activos</div>
+                        <div class="el-stat-number">@activeCitizens.ToString("N0")</div>
+                    </div>
+                    <div class="el-stat-icon active" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                    </div>
+                </div>
+                <div class="el-meter" aria-hidden="true"><span class="m-active" style="width:@activeRate.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)%"></span></div>
+                <div class="el-stat-desc">
+                    @(totalCitizens > 0 ? $"{activeRate:0.#}% del registro" : "Sin registros disponibles")
+                </div>
+            </article>
+
+            <article class="el-stat">
+                <div class="el-stat-top">
+                    <div>
+                        <div class="el-stat-label">Ciudadanos inactivos</div>
+                        <div class="el-stat-number">@inactiveCitizens.ToString("N0")</div>
+                    </div>
+                    <div class="el-stat-icon inactive" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 8v5M12 16.5v.01" /></svg>
+                    </div>
+                </div>
+                <div class="el-meter" aria-hidden="true"><span class="m-inactive" style="width:@inactiveRate.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)%"></span></div>
+                <div class="el-stat-desc">
+                    @(totalCitizens > 0 ? $"{inactiveRate:0.#}% del registro" : "Registros no activos")
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <section class="el-panel" aria-labelledby="citizens-title">
+
+        <div class="el-toolbar">
+            <div>
+                <h3 id="citizens-title">Directorio de ciudadanos</h3>
+                <p>Consulta, busca, ordena y administra los registros existentes.</p>
+            </div>
+
+            <div class="el-controls">
+                <label class="el-search">
+                    <span class="el-sr-only">Buscar por nombre, correo o documento</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+                    <input id="citizenSearch" type="search" placeholder="Buscar nombre, correo o documento..." autocomplete="off" />
+                    <span class="el-kbd" aria-hidden="true">/</span>
+                </label>
+
+                <select id="statusFilter" class="el-select" aria-label="Filtrar por estado">
+                    <option value="all">Todos los estados</option>
+                    <option value="active">Activos</option>
+                    <option value="inactive">Inactivos</option>
+                </select>
+
+                <button type="button" id="exportCsv" class="el-btn el-btn-secondary">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
+                    Exportar CSV
+                </button>
+            </div>
+        </div>
+
+        <div class="el-table-wrap">
+            <table class="el-table">
+                <thead>
+                    <tr>
+                        <th scope="col" data-key="id" aria-sort="ascending">
+                            <button type="button" class="el-sort" data-sort="id">ID <span class="arrow" aria-hidden="true">▲</span></button>
+                        </th>
+                        <th scope="col" data-key="name">
+                            <button type="button" class="el-sort" data-sort="name">Ciudadano <span class="arrow" aria-hidden="true">▲</span></button>
+                        </th>
+                        <th scope="col" data-key="email">
+                            <button type="button" class="el-sort" data-sort="email">Correo electrónico <span class="arrow" aria-hidden="true">▲</span></button>
+                        </th>
+                        <th scope="col" data-key="doc">
+                            <button type="button" class="el-sort" data-sort="doc">Documento <span class="arrow" aria-hidden="true">▲</span></button>
+                        </th>
+                        <th scope="col" data-key="status">
+                            <button type="button" class="el-sort" data-sort="status">Estado <span class="arrow" aria-hidden="true">▲</span></button>
+                        </th>
+                        <th scope="col"><span class="el-th-static">Acciones</span></th>
+                    </tr>
+                </thead>
+
+                <tbody id="citizensTableBody">
+                    @foreach (var citizen in citizens)
+                    {
+                        var fullName = $"{citizen.Name} {citizen.LastName}".Trim();
+                        var status = citizen.IsActive ? "active" : "inactive";
+                        var email = citizen.Email ?? "";
+                        var rawDocument = citizen.IdentityDocument ?? "";
+                        var document = Electium.Application.Helpers.DocumentHelper.Format(rawDocument);
+
+                        <tr class="citizen-row"
+                            data-status="@status"
+                            data-id="@citizen.Id"
+                            data-name="@fullName"
+                            data-email="@email"
+                            data-doc="@document"
+                            data-search="@($"{citizen.Id} {fullName} {email} {document} {rawDocument}")">
+
+                            <td><span class="el-id">#@citizen.Id</span></td>
+
+                            <td>
+                                <div class="el-person">
+                                    <div class="el-avatar" aria-hidden="true">@Initials(citizen.Name, citizen.LastName)</div>
+                                    <div>
+                                        <div class="el-name">@(string.IsNullOrWhiteSpace(fullName) ? "Sin nombre" : fullName)</div>
+                                        <div class="el-sub">Registro de ciudadano</div>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td>
+                                @if (string.IsNullOrWhiteSpace(email))
+                                {
+                                    <span class="el-na">No disponible</span>
+                                }
+                                else
+                                {
+                                    <a class="el-mail" href="mailto:@email">@email</a>
+                                }
+                            </td>
+
+                            <td>
+                                @if (string.IsNullOrWhiteSpace(document))
+                                {
+                                    <span class="el-na">No disponible</span>
+                                }
+                                else
+                                {
+                                    <span class="el-doc">@document</span>
+                                }
+                            </td>
+
+                            <td>
+                                @if (citizen.IsActive)
+                                {
+                                    <span class="el-badge is-active">Activo</span>
+                                }
+                                else
+                                {
+                                    <span class="el-badge is-inactive">Inactivo</span>
+                                }
+                            </td>
+
+                            <td>
+                                <div class="el-actions">
+                                    <a asp-action="Edit" asp-route-id="@citizen.Id"
+                                       class="el-act edit"
+                                       aria-label="Editar ciudadano @fullName">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
+                                        Editar
+                                    </a>
+
+                                    @* El Tag Helper de <form> ya inyecta el token antiforgery automáticamente. *@
+                                    <form asp-action="Delete" asp-route-id="@citizen.Id" method="post"
+                                          class="delete-form" data-citizen-name="@fullName">
+                                        <button type="submit" class="el-act delete"
+                                                aria-label="Eliminar ciudadano @fullName">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v5M14 11v5" /></svg>
+                                            Eliminar
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+
+                    <tr id="emptyState" class="el-empty" style="@(citizens.Count == 0 ? "" : "display:none;")">
+                        <td colspan="6">
+                            <div class="el-empty-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+                            </div>
+                            <h4 id="emptyStateTitle">No hay ciudadanos registrados</h4>
+                            <p id="emptyStateDescription">Registra un nuevo ciudadano para comenzar a construir tu directorio.</p>
+
+                            @if (citizens.Count == 0)
+                            {
+                                <a asp-action="Create" class="el-btn el-btn-primary">Registrar primer ciudadano</a>
+                            }
+                            else
+                            {
+                                <button type="button" id="clearFilters" class="el-btn el-btn-secondary">Limpiar filtros</button>
+                            }
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <footer class="el-footer">
+            <div class="el-footer-left">
+                <span id="resultsCount" aria-live="polite">Mostrando @totalCitizens de @totalCitizens ciudadanos</span>
+                <label class="el-page-size">
+                    Filas
+                    <select id="pageSize">
+                        <option value="10" selected>10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                    </select>
+                </label>
+            </div>
+
+            <nav class="el-pager" id="pager" aria-label="Paginación"></nav>
+        </footer>
+    </section>
+</div>
+</div>
+
+<!-- Confirmación de eliminación -->
+<dialog id="deleteDialog" class="el-dialog" aria-labelledby="deleteTitle">
+    <div class="el-dialog-body">
+        <div class="el-dialog-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0ZM12 9v4M12 17h.01" /></svg>
+        </div>
+        <h4 id="deleteTitle">Eliminar ciudadano</h4>
+        <p id="deleteMessage">Esta acción no se puede deshacer.</p>
+    </div>
+    <div class="el-dialog-actions">
+        <button type="button" class="el-btn el-btn-secondary" id="deleteCancel">Cancelar</button>
+        <button type="button" class="el-btn el-btn-danger" id="deleteConfirm">Sí, eliminar</button>
+    </div>
+</dialog>
+
+<div id="toast" class="el-toast" role="status" aria-live="polite"></div>
+
+<script>
+    (() => {
+        "use strict";
+
+        const $ = (id) => document.getElementById(id);
+
+        const searchInput = $("citizenSearch");
+        const statusFilter = $("statusFilter");
+        const pageSizeSelect = $("pageSize");
+        const tableBody = $("citizensTableBody");
+        const emptyState = $("emptyState");
+        const emptyTitle = $("emptyStateTitle");
+        const emptyDescription = $("emptyStateDescription");
+        const resultsCount = $("resultsCount");
+        const pager = $("pager");
+        const toast = $("toast");
+
+        const rows = Array.from(tableBody.querySelectorAll(".citizen-row"));
+        const state = { query: "", status: "all", sortKey: "id", sortDir: "asc", page: 1, pageSize: 10 };
+
+        const normalize = (value) =>
+            (value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+
+        const collator = new Intl.Collator("es", { numeric: true, sensitivity: "base" });
+
+        // Colores de avatar estables según el nombre
+        const palette = [
+            ["#e8eefc", "#2b4fa3"], ["#e6f6ee", "#15803d"], ["#fdf1e1", "#b45309"],
+            ["#f3e8fd", "#7e22ce"], ["#e4f5f8", "#0e7490"], ["#fde8ee", "#be185d"]
+        ];
+        rows.forEach((row) => {
+            const text = row.dataset.name || "";
+            let hash = 0;
+            for (let i = 0; i < text.length; i++) hash = (hash * 31 + text.charCodeAt(i)) >>> 0;
+            const [bg, fg] = palette[hash % palette.length];
+            const avatar = row.querySelector(".el-avatar");
+            avatar.style.setProperty("--av-bg", bg);
+            avatar.style.setProperty("--av-fg", fg);
+        });
+
+        // Normalizamos el texto de búsqueda una sola vez
+        rows.forEach((row) => { row._search = normalize(row.dataset.search); });
+
+        function getFiltered() {
+            const q = normalize(state.query);
+            const list = rows.filter((row) =>
+                row._search.includes(q) &&
+                (state.status === "all" || row.dataset.status === state.status));
+
+            const dir = state.sortDir === "asc" ? 1 : -1;
+            list.sort((a, b) => dir * collator.compare(a.dataset[state.sortKey] || "", b.dataset[state.sortKey] || ""));
+            return list;
+        }
+
+        function pageButton(label, page, { disabled = false, current = false, aria } = {}) {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.textContent = label;
+            btn.disabled = disabled;
+            if (aria) btn.setAttribute("aria-label", aria);
+            if (current) { btn.classList.add("is-current"); btn.setAttribute("aria-current", "page"); }
+            btn.addEventListener("click", () => { state.page = page; render(); });
+            return btn;
+        }
+
+        function renderPager(totalPages) {
+            pager.replaceChildren();
+            if (totalPages <= 1) return;
+
+            pager.append(pageButton("‹", state.page - 1, { disabled: state.page === 1, aria: "Página anterior" }));
+
+            const start = Math.max(1, Math.min(state.page - 2, totalPages - 4));
+            const end = Math.min(totalPages, start + 4);
+            for (let p = start; p <= end; p++) {
+                pager.append(pageButton(String(p), p, { current: p === state.page, aria: `Ir a la página ${p}` }));
+            }
+
+            pager.append(pageButton("›", state.page + 1, { disabled: state.page === totalPages, aria: "Página siguiente" }));
+        }
+
+        function render() {
+            const filtered = getFiltered();
+            const totalPages = Math.max(1, Math.ceil(filtered.length / state.pageSize));
+            state.page = Math.min(state.page, totalPages);
+
+            const from = (state.page - 1) * state.pageSize;
+            const visible = new Set(filtered.slice(from, from + state.pageSize));
+
+            // Reordenar el DOM según el orden actual y mostrar solo la página
+            filtered.forEach((row) => tableBody.insertBefore(row, emptyState));
+            rows.forEach((row) => { row.style.display = visible.has(row) ? "" : "none"; });
+
+            const isEmpty = filtered.length === 0;
+            emptyState.style.display = isEmpty ? "" : "none";
+
+            if (isEmpty && rows.length > 0) {
+                emptyTitle.textContent = "No se encontraron resultados";
+                emptyDescription.textContent = "Prueba con otro nombre, correo, documento o estado.";
+            }
+
+            resultsCount.textContent = isEmpty
+                ? `Mostrando 0 de ${rows.length} ciudadanos`
+                : `Mostrando ${from + 1}–${from + visible.size} de ${filtered.length} ciudadanos` +
+                  (filtered.length !== rows.length ? ` (filtrado de ${rows.length})` : "");
+
+            renderPager(totalPages);
+        }
+
+        // Búsqueda con debounce
+        let timer;
+        searchInput.addEventListener("input", () => {
+            clearTimeout(timer);
+            timer = setTimeout(() => { state.query = searchInput.value; state.page = 1; render(); }, 120);
+        });
+        statusFilter.addEventListener("change", () => { state.status = statusFilter.value; state.page = 1; render(); });
+        pageSizeSelect.addEventListener("change", () => { state.pageSize = Number(pageSizeSelect.value); state.page = 1; render(); });
+
+        const clearBtn = $("clearFilters");
+        if (clearBtn) {
+            clearBtn.addEventListener("click", () => {
+                searchInput.value = "";
+                statusFilter.value = "all";
+                Object.assign(state, { query: "", status: "all", page: 1 });
+                render();
+                searchInput.focus();
+            });
+        }
+
+        // Atajo "/" para enfocar la búsqueda
+        document.addEventListener("keydown", (e) => {
+            const tag = (document.activeElement?.tagName || "").toLowerCase();
+            if (e.key === "/" && !["input", "textarea", "select"].includes(tag)) {
+                e.preventDefault();
+                searchInput.focus();
+            }
+        });
+
+        // Ordenamiento
+        document.querySelectorAll("[data-sort]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+                const key = btn.dataset.sort;
+                state.sortDir = state.sortKey === key && state.sortDir === "asc" ? "desc" : "asc";
+                state.sortKey = key;
+                state.page = 1;
+
+                document.querySelectorAll("th[data-key]").forEach((th) => {
+                    const active = th.dataset.key === key;
+                    if (active) th.setAttribute("aria-sort", state.sortDir === "asc" ? "ascending" : "descending");
+                    else th.removeAttribute("aria-sort");
+                    th.querySelector(".arrow").textContent = active && state.sortDir === "desc" ? "▼" : "▲";
+                });
+                render();
+            });
+        });
+
+        // Toast
+        let toastTimer;
+        function showToast(message) {
+            toast.textContent = message;
+            toast.classList.add("is-visible");
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.classList.remove("is-visible"), 2800);
+        }
+
+        // Exportar CSV (respeta búsqueda, filtro y orden actuales)
+        $("exportCsv").addEventListener("click", () => {
+            const list = getFiltered();
+            if (list.length === 0) { showToast("No hay registros para exportar."); return; }
+
+            const esc = (v) => {
+                let s = String(v ?? "");
+                if (/^[=+\-\u0040]/.test(s)) s = "'" + s; // evita inyección de fórmulas en Excel
+                return `"${s.replace(/"/g, '""')}"`;
+            };
+            const lines = [["ID", "Nombre", "Correo", "Documento", "Estado"].map(esc).join(",")];
+            list.forEach((r) => lines.push([
+                r.dataset.id, r.dataset.name, r.dataset.email, r.dataset.doc,
+                r.dataset.status === "active" ? "Activo" : "Inactivo"
+            ].map(esc).join(",")));
+
+            const blob = new Blob(["\ufeff" + lines.join("\r\n")], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `ciudadanos-${new Date().toISOString().slice(0, 10)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+            showToast(`Se exportaron ${list.length} ciudadanos.`);
+        });
+
+        // Diálogo de eliminación
+        const dialog = $("deleteDialog");
+        let pendingForm = null;
+
+        document.querySelectorAll(".delete-form").forEach((form) => {
+            form.addEventListener("submit", (event) => {
+                event.preventDefault();
+                pendingForm = form;
+                const name = form.dataset.citizenName || "este ciudadano";
+                $("deleteMessage").textContent =
+                    `¿Seguro que deseas eliminar a ${name}? Esta acción no se puede deshacer.`;
+                dialog.showModal();
+            });
+        });
+
+        $("deleteCancel").addEventListener("click", () => { pendingForm = null; dialog.close(); });
+        $("deleteConfirm").addEventListener("click", () => {
+            const form = pendingForm;
+            pendingForm = null;
+            dialog.close();
+            if (form) form.submit(); // submit() no dispara el evento, evita el bucle
+        });
+        dialog.addEventListener("click", (e) => { if (e.target === dialog) dialog.close(); });
+
+        render();
+    })();
+</script>

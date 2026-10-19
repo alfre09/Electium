@@ -1,0 +1,58 @@
+@model VoterLoginViewModel
+@{
+    ViewData["Title"] = "Votar";
+}
+
+<div class="el-wrap" style="max-width:640px">
+    <div class="mb-4">
+        <div class="el-eyebrow text-secondary">Paso 1 de 3</div>
+        <h1 class="el-title">Verifica tu identidad</h1>
+        @if (!string.IsNullOrEmpty(Model.ElectionName))
+        {
+            <p class="el-subtitle">Elección: <strong>@Model.ElectionName</strong></p>
+        }
+    </div>
+
+    @if (string.IsNullOrEmpty(Model.ElectionName))
+    {
+        <div class="alert alert-warning">
+            No hay un proceso electoral abierto en este momento. Vuelve cuando la votación esté habilitada.
+        </div>
+    }
+    else
+    {
+        <div class="el-card">
+            <div class="el-card-body">
+                <form asp-action="Index" method="post" enctype="multipart/form-data" novalidate>
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="IdentityDocument" class="form-label"></label>
+                        <input asp-for="IdentityDocument" class="form-control form-control-lg" placeholder="000-0000000-0"
+                               inputmode="numeric" autocomplete="off" maxlength="13" />
+                        <span asp-validation-for="IdentityDocument" class="text-danger small"></span>
+                    </div>
+
+                    @if (Model.OcrEnabled)
+                    {
+                        <div class="mb-3">
+                            <label asp-for="IdentityImage" class="form-label"></label>
+                            <input asp-for="IdentityImage" type="file" class="form-control" accept="image/png,image/jpeg" />
+                            <div class="form-text">
+                                Sube una foto nítida del frente de tu documento (JPG o PNG, máximo 5 MB).
+                                Leeremos el número para confirmar que coincide con el que escribiste.
+                            </div>
+                            <span asp-validation-for="IdentityImage" class="text-danger small"></span>
+                        </div>
+                    }
+
+                    <button type="submit" class="btn btn-navy btn-lg w-100">Verificar y continuar</button>
+                </form>
+            </div>
+        </div>
+
+        <p class="text-secondary small mt-3">
+            Tu imagen se usa solo para esta verificación y no se almacena en el sistema.
+        </p>
+    }
+</div>

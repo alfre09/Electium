@@ -1,0 +1,91 @@
+@model IEnumerable<ElectionViewModel>
+@{
+    ViewData["Title"] = "Elecciones";
+
+    string StatusText(ElectionStatus s) => s switch
+    {
+        ElectionStatus.Open => "Abierta",
+        ElectionStatus.Closed => "Cerrada",
+        _ => "Borrador"
+    };
+
+    string StatusClass(ElectionStatus s) => s switch
+    {
+        ElectionStatus.Open => "text-bg-success",
+        ElectionStatus.Closed => "text-bg-dark",
+        _ => "text-bg-secondary"
+    };
+}
+
+<div class="el-wrap">
+    <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+        <div>
+            <h1 class="el-title">Elecciones</h1>
+            <p class="el-subtitle">Crea la elección, registra sus candidatos y luego ábrela para votar.</p>
+        </div>
+        <a class="btn btn-gold" asp-action="Create">+ Nueva elección</a>
+    </div>
+
+    <div class="el-card">
+        <div class="table-responsive">
+            <table class="table tbl align-middle mb-0">
+                <thead>
+                    <tr><th>Elección</th><th>Estado</th><th>Apertura</th><th>Cierre</th><th class="text-end">Acciones</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">@item.Name</div>
+                                @if (!string.IsNullOrWhiteSpace(item.Description))
+                                {
+                                    <div class="small text-secondary">@item.Description</div>
+                                }
+                            </td>
+                            <td><span class="badge @StatusClass(item.Status)">@StatusText(item.Status)</span></td>
+                            <td class="text-secondary small">@(item.OpenedAt?.ToLocalTime().ToString("dd/MM/yyyy hh:mm tt") ?? "—")</td>
+                            <td class="text-secondary small">@(item.ClosedAt?.ToLocalTime().ToString("dd/MM/yyyy hh:mm tt") ?? "—")</td>
+                            <td class="text-end">
+                                <div class="d-inline-flex flex-wrap gap-2 justify-content-end">
+                                    <a class="btn btn-sm btn-outline-secondary" asp-controller="Candidates" asp-action="Index" asp-route-electionId="@item.Id">Candidatos</a>
+                                    <a class="btn btn-sm btn-outline-secondary" asp-controller="Results" asp-action="Index" asp-route-electionId="@item.Id">Resultados</a>
+
+                                    @if (item.Status == ElectionStatus.Draft)
+                                    {
+                                        <form asp-action="Open" asp-route-id="@item.Id" method="post"
+                                              onsubmit="return confirm('¿Abrir la elección? Ya no se podrán modificar sus candidatos.');">
+                                            <button type="submit" class="btn btn-sm btn-success">Abrir</button>
+                                        </form>
+                                    }
+                                    @if (item.Status == ElectionStatus.Open)
+                                    {
+                                        <form asp-action="Close" asp-route-id="@item.Id" method="post"
+                                              onsubmit="return confirm('¿Cerrar la elección? Esta acción no se puede deshacer.');">
+                                            <button type="submit" class="btn btn-sm btn-dark">Cerrar</button>
+                                        </form>
+                                    }
+                                    @if (item.Status != ElectionStatus.Closed)
+                                    {
+                                        <a class="btn btn-sm btn-outline-primary" asp-action="Edit" asp-route-id="@item.Id">Editar</a>
+                                    }
+                                    @if (item.Status == ElectionStatus.Draft)
+                                    {
+                                        <form asp-action="Delete" asp-route-id="@item.Id" method="post"
+                                              onsubmit="return confirm('¿Eliminar esta elección?');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                                        </form>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Any())
+                    {
+                        <tr><td colspan="5" class="text-center text-secondary py-5">Aún no hay elecciones registradas.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

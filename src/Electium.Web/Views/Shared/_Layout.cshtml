@@ -1,0 +1,111 @@
+@{
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
+    var isAdmin = User.IsInRole(AppRoles.Admin);
+    var isLeader = User.IsInRole(AppRoles.Leader);
+    var isStaff = isAdmin || isLeader;
+
+    string Active(params string[] names) => names.Contains(controller, StringComparer.OrdinalIgnoreCase) ? "active" : string.Empty;
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Electium</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="dr-tricolor"></div>
+
+    <header class="dr-nav-wrap">
+        <div class="dr-nav">
+            <a class="dr-brand" asp-controller="Home" asp-action="Index">
+                <span class="dr-brand-mark"><i class="bi bi-bank"></i></span>
+                <span><span class="dr-brand-name">ELECTIUM</span><span class="dr-brand-sub">PLATAFORMA DE GESTIÓN ELECTORAL</span></span>
+            </a>
+
+            <nav class="dr-nav-links" aria-label="Navegación principal">
+                <a class="@Active("Home")" asp-controller="Home" asp-action="Index"><i class="bi bi-house-door"></i> Inicio</a>
+                <a class="@Active("Vote")" asp-controller="Vote" asp-action="Index"><i class="bi bi-box-arrow-in-down"></i> Votar</a>
+
+                @if (isStaff)
+                {
+                    <a class="@Active("Dashboard")" asp-controller="Dashboard" asp-action="Index"><i class="bi bi-speedometer2"></i> Panel</a>
+                }
+                @if (isAdmin)
+                {
+                    <a class="@Active("Citizens")" asp-controller="Citizens" asp-action="Index"><i class="bi bi-people"></i> Ciudadanos</a>
+                    <a class="@Active("Parties")" asp-controller="Parties" asp-action="Index"><i class="bi bi-flag"></i> Partidos</a>
+                    <a class="@Active("Positions")" asp-controller="Positions" asp-action="Index"><i class="bi bi-diagram-3"></i> Puestos</a>
+                    <a class="@Active("Elections")" asp-controller="Elections" asp-action="Index"><i class="bi bi-calendar2-check"></i> Elecciones</a>
+                    <a class="@Active("Leaders")" asp-controller="Leaders" asp-action="Index"><i class="bi bi-person-check"></i> Dirigentes</a>
+                }
+                @if (isStaff)
+                {
+                    <a class="@Active("Candidates")" asp-controller="Candidates" asp-action="Index"><i class="bi bi-person-badge"></i> Candidatos</a>
+                    <a class="@Active("Results")" asp-controller="Results" asp-action="Index"><i class="bi bi-file-earmark-bar-graph"></i> Resultados</a>
+                }
+            </nav>
+
+            <div class="dr-auth">
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <span class="dr-user" title="@User.Identity.Name"><i class="bi bi-person-circle"></i> @User.Identity.Name</span>
+                    <form asp-controller="Account" asp-action="Logout" method="post">
+                        <button type="submit" class="btn btn-sm btn-outline-secondary">Salir</button>
+                    </form>
+                }
+                else
+                {
+                    <a class="btn btn-sm btn-navy" asp-controller="Account" asp-action="Login"><i class="bi bi-lock"></i> Acceso administrativo</a>
+                }
+            </div>
+
+            <div class="dr-country">
+                <span class="dr-nav-flag" role="img" aria-label="Bandera dominicana">
+                    @for (var i = 0; i < 12; i++)
+                    {
+                        <i style="--i:@i"></i>
+                    }
+                </span>
+                <span>REPÚBLICA DOMINICANA</span>
+            </div>
+        </div>
+    </header>
+
+    <main role="main">
+        @if (TempData["Success"] is string success)
+        {
+            <div class="container-xxl pt-3">
+                <div class="alert alert-success alert-dismissible fade show mb-0" role="alert">
+                    @success
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                </div>
+            </div>
+        }
+        @if (TempData["Error"] is string error)
+        {
+            <div class="container-xxl pt-3">
+                <div class="alert alert-danger alert-dismissible fade show mb-0" role="alert">
+                    @error
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                </div>
+            </div>
+        }
+
+        @RenderBody()
+    </main>
+
+    <footer class="dr-footer">
+        <div class="dr-footer-brand"><img src="https://flagcdn.com/w40/do.png" alt="Bandera dominicana"><span>República Dominicana</span></div>
+        <span><strong>ELECTIUM</strong> · Plataforma de gestión electoral · © @DateTime.Now.Year</span>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
